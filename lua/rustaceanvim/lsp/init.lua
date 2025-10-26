@@ -182,8 +182,17 @@ Starting rust-analyzer client in detached/standalone mode (with reduced function
     lsp_start_config.settings = get_start_settings(root_dir, client_config)
     configure_file_watcher(lsp_start_config)
 
+    local vscode_root_dir = nil
+    local vscode_dirs = vim.fs.find({ '.vscode' }, { upward = true, path = vim.fs.dirname(bufname), type = 'directory' })
+    if not vim.tbl_isempty(vscode_dirs) then
+      vscode_root_dir = vim.fs.dirname(vscode_dirs[1])
+    end
+
     -- Check if a client is already running and add the workspace folder if necessary.
     for _, client in pairs(rust_analyzer.get_active_rustaceanvim_clients()) do
+      if vscode_root_dir and client.root_dir ~= vscode_root_dir then
+        goto continue
+      end
       if root_dir and not is_in_workspace(client, root_dir) then
         local workspace_folder = { uri = vim.uri_from_fname(root_dir), name = root_dir }
         local params = {
@@ -200,6 +209,7 @@ Starting rust-analyzer client in detached/standalone mode (with reduced function
         vim.lsp.buf_attach_client(bufnr, client.id)
         return
       end
+      ::continue::
     end
 
     local rust_analyzer_cmd = types.evaluate(client_config.cmd)

@@ -142,7 +142,7 @@ M.start = function(bufnr)
   -- in case it has not been set
   -- (This does not overwrite any existing configs).
   vim.lsp.config(ra_client_name, {})
-  local ra_config = vim.lsp.config[ra_client_name] or {}
+  local ra_config = vim.deepcopy(vim.lsp.config[ra_client_name] or {})
   if ra_config.settings then
     -- Ensure vim.lsp.config settings get merged with server.default_settings.
     ra_config.default_settings = ra_config.settings
